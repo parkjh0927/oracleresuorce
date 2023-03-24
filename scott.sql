@@ -347,3 +347,148 @@ select * from emp;
 select TO_CHAR(HIREDATE, 'YYYY') hire_year, deptno, count(*) cnt
 from emp
 group by TO_CHAR(HIREDATE, 'YYYY'), DEPTNO;
+
+--조인 : 여러 테이블을 하나의 테이블처럼 사용
+-- 1) 내부조인(inner join) : 여러 개의 테이블에서 공통된 부분만 ㅜ출
+-- 2) 외부조인(outer join
+--  1. left outer join
+--  2. right outer join
+--  3. full outer join
+
+select *
+from emp, dept
+order by empno;
+
+select e.empno, e.ename, d.deptno, d.dname, d.loc
+from emp e, dept d
+where e.deptno = d.deptno and sal >=3000;
+
+select *
+from emp e, salgrade s
+where e.sal between s.losal and s.hisal;
+
+-- left outer join
+select *
+from emp e1, emp e2
+where e1.mgr=e2.empno(+);
+
+-- right outer join
+select *
+from emp e1, emp e2
+where e1.mgr(+)=e2.empno;
+
+--SQL-99 표준
+select *
+from emp e join dept d on e.deptno = d.deptno;
+
+select *
+from emp e1 full outer join emp e2 on e1.mgr = e2.empno;
+
+desc dept;
+desc emp;
+
+select e.deptno, d.dname, e.empno, e.ename, e.sal
+from emp e, dept d
+where e.deptno = d.deptno and e.sal>2000
+order by deptno;
+
+select d.deptno, d.dname, avg(sal) avg_sal, max(sal) max_sal, min(sal) min_sal
+from emp e, dept d
+where e.deptno = d.deptno
+group by d.deptno, d.dname;
+
+select e.deptno, d.dname, e.empno, e.ename, e.job, e.sal
+from emp e, dept d
+where e.deptno(+) = d.deptno
+order by e.deptno,e.empno;
+
+--서브쿼리
+-- sql 문을 실행하는 데 필요한 데이터를 추가로 조회하기 위해 sql 문 내부에서 사용하는 select 문
+
+select *
+from emp
+where sal>(select sal from emp where ename='JONES');
+
+select e.empno, e.ename, e.job, e.sal, e.deptno, d.dname, d.loc
+from emp e, dept d
+where e.deptno=d.deptno and e.deptno=20  and e.sal>(select avg(sal) from emp);
+
+select * from emp where sal in (select max(sal) from emp group by deptno);
+
+select * from emp where sal < any (select sal from emp where deptno=30);
+select * from emp where sal < all (select sal from emp where deptno=30);
+
+select * from emp where exists (select dname from dept where deptno=10);
+
+
+
+select e.job, e.empno, e.ename, e.sal, e.deptno, d.dname
+from emp e, dept d
+where e.deptno = d.deptno and e.job = (select job from emp where ename = 'ALLEN');
+
+desc emp;
+desc dept;
+desc salgrade;
+
+select e.empno, e.ename, d.dname, e.hiredate, d.loc, e.sal, s.grade
+from emp e, dept d, salgrade s
+where e.deptno=d.deptno and e.sal between losal and hisal and e.sal > (select avg(sal) from emp) 
+order by sal desc, empno;
+
+select * 
+from emp
+where (deptno, sal) in(select deptno, max(sal) from emp group by deptno);
+
+-- from 절에 사용하는 서브쿼리(인라인 뷰)
+select e10.empno, e10.ename, e10.deptno, d.dname, d.loc
+from (select * from emp where deptno = 10) e10,
+     (select * from dept) d
+where e10.deptno = d.deptno;
+
+--select 절에 사용하는 서브쿼리(스칼라 서브쿼리)
+select empno, ename, job, sal, 
+(select grade from salgrade where e.sal between losal and hisal) salgrade, deptno, 
+(select dname from dept where e.deptno = dept.deptno) dname
+from emp e;
+
+select e.empno, e.ename, e.job, d.deptno, d.dname, d.loc
+from emp e, dept d
+where e.deptno = d.deptno and d.deptno = 10 and e.job not in (select job from emp where deptno=30); 
+
+
+desc emp;
+desc dept;
+desc salgrade;
+
+
+
+select empno ename, job, grade
+from emp e, salgrade s
+where e.sal between s.losal and s.hisal and e.sal > (select max(sal) from emp where job='SALESMAN');
+
+
+
+--DML(Data Manipulation Language) : 데이터 추가(INSERT), 수정(UPDATE), 삭제(DELETE)하는 데이터 조작어
+--select + DML ==> 자주 사용하는 sql 임
+
+--연습용 테이블 생성
+CREATE TABLE dept_temp AS SELECT * from dept;
+
+DROP TABLE dept_temp;
+
+insert into dept_temp(deptno, dname, loc)
+values(50, 'DATABASE','SEOUL');
+
+
+select * from dept_temp;
+
+insert into dept_temp values(60, 'NETWORK','BUSAN');
+
+--insert into dept_temp values(600, 'NETWORK','BUSAN');
+
+create table emp_temp as select * from emp where 1<> 1;
+
+insert into emp_temp(empno, ename, job, mgr, hiredate, sal, comm, deptno)
+values(9999,'홍길동','PRESIIDENT',NULL,'2001/01/01',5000,1000,10);
+
+select * from emp_temp;

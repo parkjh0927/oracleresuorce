@@ -95,4 +95,41 @@ from employees;
 select count(distinct manager_id)
 from employees;
 
+desc employees;
+select e1.hire_date, e1.last_name, e1.manager_id
+from employees e1, employees e2
+where e2.manager_id=e1.employee_id and e1.hire_date<e2.hire_date;
 
+select e1.hire_date, e1.last_name, e1.manager_id
+from employees e1, departments d, locations l
+where e1.department_id = d.department_id and d.location_id = l.location_id and city like 'T%';
+
+
+
+select e.employee_id, e.last_name, e.department_id, e.salary
+from employees e, departments d
+where e.department_id = d.department_id and d.location_id=1700; 
+
+desc departments;
+
+select d.department_id, e.last_name, e.job_id
+from employees e, departments d
+where e.department_id=d.department_id and d.department_name = 'Executive';
+
+select distinct e1.department_id, concat(e1.first_name, e1.last_name) name, e1.salary, e1.hire_date
+from employees e1, employees e2
+where e1.hire_date > e2.hire_date and e1.salary<e2.salary; 
+
+select employee_id, last_name
+from employees
+where department_id in (select department_id from employees where lower(last_name) like '%u%');
+
+select last_name, job_id, salary
+from employees
+where salary > (select max(salary) from employees where job_id = 'SA_MAN');
+
+select last_name, department_id, salary
+from employees
+where (department_id, salary) in (select department_id, salary from employees where commission_pct is not null);
+
+ 
