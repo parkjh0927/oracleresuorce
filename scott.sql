@@ -469,6 +469,8 @@ where e.sal between s.losal and s.hisal and e.sal > (select max(sal) from emp wh
 
 
 --DML(Data Manipulation Language) : 데이터 추가(INSERT), 수정(UPDATE), 삭제(DELETE)하는 데이터 조작어
+--COMMIT : DML 작업을 데이터베이스에 최종 반영
+--ROLLBACK : DML 작업을 취소
 --select + DML ==> 자주 사용하는 sql 임
 
 --연습용 테이블 생성
@@ -489,6 +491,118 @@ insert into dept_temp values(60, 'NETWORK','BUSAN');
 create table emp_temp as select * from emp where 1<> 1;
 
 insert into emp_temp(empno, ename, job, mgr, hiredate, sal, comm, deptno)
-values(9999,'홍길동','PRESIIDENT',NULL,'2001/01/01',5000,1000,10);
+values(9999,'홍길동','PRESIDENT',NULL,'2001/01/01',5000,1000,10);
 
 select * from emp_temp;
+
+
+insert into emp_temp(empno, ename, job, mgr, hiredate, sal, comm, deptno)
+select e.empno, e.ename, e.job, e.mgr, e.hiredate, e.sal, e.comm, e.deptno from emp e ,salgrade s  where e.sal between s.losal and s.hisal and s.grade = 1;
+
+commit;
+
+-- update : 테이블에 있는 데이터 수정
+--update 테이블명
+--set 변경할열이름 = 데이터, 변경할열이름 = 데이터.....
+--where 변경을 위한 대상 행을 선별하기 위한 조건
+select * from dept_temp;
+
+update  dept_temp
+set loc = 'SEOUL'
+where deptno = 40;
+
+rollback;
+
+update dept_temp
+set (dname, loc) = (select dname, loc from dept where deptno = 40)
+where deptno = 40;
+
+commit;
+
+-- delete : 테이블에 있는 데이터 삭제
+-- delete 테이블명
+-- from (선택)
+-- where 삭제 데이터를  선별하기 위한 조건식
+
+
+create table emp_temp2 as select * from emp;
+drop table emp_temp2;
+
+delete from emp_temp2
+where empno in (select e.empno from emp_temp2 e, salgrade s where e.sal between s.losal and s.hisal and s.grade=3 and e.deptno = 30);
+select * from emp_temp2;
+
+
+select * from emp;
+
+create table exam_emp as select * from emp where 1<>1;
+drop table exam_emp;
+
+select * from exam_emp;
+
+insert into exam_emp(empno, ename, job, mgr, hiredate, sal, comm, deptno)
+values(7201, 'TEST_USER1', 'manager', 7788, '2016-01-02', 4500 ,null, 50);
+
+insert into exam_emp(empno, ename, job, mgr, hiredate, sal, comm, deptno)
+values(7202, 'TEST_USER2', 'clerk', 7201, '2016-02-21', 1800 ,null, 50);
+
+insert into exam_emp(empno, ename, job, mgr, hiredate, sal, comm, deptno)
+values(7203, 'TEST_USER3', 'analyst', 7201, '2016-04-11', 3400 ,null, 60);
+
+insert into exam_emp(empno, ename, job, mgr, hiredate, sal, comm, deptno)
+values(7204, 'TEST_USER4', 'salesman', 7201, '2016-05-31', 2700 , 300, 60);
+
+insert into exam_emp(empno, ename, job, mgr, hiredate, sal, comm, deptno)
+values(7205, 'TEST_USER5', 'clerk', 7201, '2016-07-20', 2600 ,null, 70);
+
+insert into exam_emp(empno, ename, job, mgr, hiredate, sal, comm, deptno)
+values(7206, 'TEST_USER6', 'clerk', 7201, '2016-09-08', 2600 ,null, 70);
+
+insert into exam_emp(empno, ename, job, mgr, hiredate, sal, comm, deptno)
+values(7207, 'TEST_USER7', 'lecturer', 7201, '2016-10-28', 2300 ,null, 80);
+
+insert into exam_emp(empno, ename, job, mgr, hiredate, sal, comm, deptno)
+values(7208, 'TEST_USER8', 'student', 7201, '2016-03-09', 1200 ,null, 80);
+
+create table exam_dept as select * from dept where 1<> 1;
+create table exam_salgrade as select * from salgrade where 1<>1;
+
+update exam_emp 
+set deptno=70
+where sal > (select avg(sal) from exam_emp where deptno=50);
+
+update exam_emp
+set sal=sal*1.1, deptno=80
+where hiredate > (select min(hiredate) from exam_emp where deptno=60);
+
+delete from exam_emp
+where empno in (select empno from exam_emp e, salgrade s where e.sal between s.losal and s.hisal and s.grade = 5);
+
+
+--트랜잭션(transaction) : 최소 수행 단위
+--트랜잭션 제어하는 구문 TCL(Transaction Control Language) : commit, rollback
+
+create table dept_tcl as select * from dept;
+
+insert into dept_tcl values(50, 'DATABASE','SEOOUL');
+
+update dept_tcl set loc= 'BUSAN' where deptno=40;
+
+delete from dept_tcl where dname = 'RESEARCH';
+
+select * from dept_tcl;
+
+--트랜잭션 취소
+rollback;
+ 
+--트랜잭션 최종 반영
+commit;
+
+--세션 : 어떤 활동을 위한 시간이나 기간
+--데이터베이스 세션 : 데이터베이스 접속을 시작으로 관련작업 수행한 후 접속 완료
+--LOCK : 잠금(수정 중인 데이터 접근 막기)
+
+delete from dept_tcl where deptno=50;
+
+
+select * from dept_temp;
